@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* DeepSeek 风格: 深色主题 + 暖色点缀 */
+:root {
+  --ds-bg-primary: #1a1a2e;
+  --ds-bg-secondary: #16213e;
+  --ds-bg-card: #0f3460;
+  --ds-bg-input: #1e2a4a;
+  --ds-accent: #4a9eff;
+  --ds-accent-hover: #3a7eef;
+  --ds-accent-warm: #ff6b6b;
+  --ds-text-primary: #e8e8e8;
+  --ds-text-secondary: #a0a0b8;
+  --ds-text-muted: #6a6a7e;
+  --ds-border: #2a2a4a;
+  --ds-shadow: rgba(0, 0, 0, 0.3);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--ds-bg-primary);
+  color: var(--ds-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-text-muted);
+}
+
+/* 输入框聚焦环 */
+input:focus, textarea:focus {
+  outline: none;
+}
+
+/* 动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out; }
+.animate-fade-in    { animation: fadeIn 0.3s ease-out; }
+.animate-slide-in   { animation: slideInRight 0.3s ease-out; }
