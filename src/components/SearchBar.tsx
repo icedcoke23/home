@@ -1,7 +1,13 @@
 import { useState } from 'react';
-import { SEARCH_ENGINES } from '../data';
 
 type Mode = 'web' | 'ai';
+
+const ENGINES = [
+  { icon: '🔍', name: 'Google' },
+  { icon: '🔎', name: 'Bing' },
+  { icon: '🅱️', name: '百度' },
+  { icon: '🦆', name: 'DuckDuckGo' },
+];
 
 interface Props {
   onSearch: (q: string, mode: Mode) => void;
@@ -10,9 +16,8 @@ interface Props {
 export default function SearchBar({ onSearch }: Props) {
   const [q, setQ] = useState('');
   const [mode, setMode] = useState<Mode>('web');
-  const [engineIdx, setEngineIdx] = useState(0);
-  const engines = Object.entries(SEARCH_ENGINES);
-  const [, eVal] = engines[engineIdx % engines.length];
+  const [ei, setEi] = useState(0);
+  const engine = ENGINES[ei % ENGINES.length];
 
   const go = () => {
     const t = q.trim();
@@ -20,55 +25,57 @@ export default function SearchBar({ onSearch }: Props) {
     onSearch(t, mode);
   };
 
-  const cycleEngine = () => setEngineIdx((i) => (i + 1) % engines.length);
-  const toggleMode = () => setMode((m) => (m === 'web' ? 'ai' : 'web'));
-
   return (
     <div className="relative z-10 w-full max-w-md mx-auto px-5">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl glass
-                      focus-within:border-[var(--accent)]/30 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]
-                      transition-all duration-200">
-        {/* 搜索引擎切换 */}
-        <button onClick={cycleEngine}
-          className="text-xl text-[var(--text2)] hover:text-[var(--text)] transition-colors shrink-0"
-          aria-label="切换搜索引擎">
-          {eVal.icon}
+      {/* 搜索框 */}
+      <div className="flex items-center gap-3 px-5 py-4 rounded-2xl glass
+                      transition-all duration-250
+                      focus-within:border-[var(--brand)]/30
+                      focus-within:shadow-[0_0_0_4px_var(--brand-glow)]">
+
+        {/* 引擎切换 */}
+        <button
+          onClick={() => setEi(ei + 1)}
+          className="text-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+                     transition-colors shrink-0 p-0.5"
+          aria-label={`当前引擎 ${engine.name}，点击切换`}
+        >
+          {engine.icon}
         </button>
 
-        {/* 输入框 */}
+        {/* 输入 */}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && go()}
-          placeholder={mode === 'ai' ? 'AI 智能问答...' : `${eVal.name} 搜索...`}
-          className="flex-1 bg-transparent text-[var(--text)] placeholder-[var(--text3)] text-[17px] py-0.5 min-w-0 outline-none"
+          placeholder={mode === 'ai' ? 'AI 问答...' : `${engine.name} 搜索...`}
+          className="flex-1 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)]
+                     text-[17px] leading-6 py-0 min-w-0"
           autoFocus
         />
 
         {/* 清除 */}
         {q && (
-          <button onClick={() => setQ('')}
-            className="text-sm text-[var(--text3)] hover:text-[var(--text2)] shrink-0 transition-colors">✕</button>
+          <button
+            onClick={() => setQ('')}
+            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]
+                       shrink-0 transition-colors w-6 h-6 flex items-center justify-center"
+          >
+            ✕
+          </button>
         )}
 
-        {/* 模式切换 */}
+        {/* Web/AI 切换 */}
         <button
-          onClick={toggleMode}
-          className={`shrink-0 text-[13px] font-medium px-3 py-1.5 rounded-full transition-all duration-300
-            ${mode === 'ai'
-              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent2)] text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]'
-              : 'bg-[var(--border)] text-[var(--text2)]'}`}
+          onClick={() => setMode(mode === 'web' ? 'ai' : 'web')}
+          className={`shrink-0 text-[13px] font-semibold px-3.5 py-1.5 rounded-full
+                     transition-all duration-300 ${
+            mode === 'ai'
+              ? 'bg-[var(--brand)] text-white shadow-[0_0_16px_var(--brand-glow)]'
+              : 'bg-[var(--bg-overlay)] text-[var(--text-secondary)]'
+          }`}
         >
           {mode === 'ai' ? 'AI' : 'Web'}
-        </button>
-
-        {/* 搜索按钮 */}
-        <button onClick={go}
-          className="text-[var(--text2)] hover:text-[var(--text)] shrink-0 transition-colors"
-          aria-label="搜索">
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>
-          </svg>
         </button>
       </div>
     </div>

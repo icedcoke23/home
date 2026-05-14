@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function TopBar() {
   const [time, setTime] = useState(new Date());
-  const [dark, setDark] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return localStorage.getItem('home_theme') !== 'light';
-  });
+  const [isLight, setIsLight] = useState(() => localStorage.getItem('home_theme') === 'light');
 
   useEffect(() => {
     const i = setInterval(() => setTime(new Date()), 1000);
@@ -13,29 +10,32 @@ export default function TopBar() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('home_theme', dark ? 'dark' : 'light');
-  }, [dark]);
+    document.documentElement.classList.toggle('light', isLight);
+    localStorage.setItem('home_theme', isLight ? 'light' : 'dark');
+  }, [isLight]);
 
   return (
-    <div className="relative z-10 flex items-center justify-between px-5 pt-4 pb-1">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">🌤️</span>
-        <span className="text-sm text-[var(--text2)]">22°C 晴</span>
+    <header className="relative z-10 flex items-center justify-between px-5 py-4" style={{ paddingTop: 'calc(16px + var(--safe-top))' }}>
+      {/* 天气 */}
+      <div className="flex items-center gap-2 opacity-80">
+        <span className="text-xl">🌤️</span>
+        <span className="text-sm text-[var(--text-secondary)]">22°</span>
       </div>
 
-      <time className="text-base font-medium text-[var(--text2)] tabular-nums">
+      {/* 时间 */}
+      <time className="text-[15px] font-medium text-[var(--text-secondary)] tabular-nums tracking-tight">
         {time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
       </time>
 
+      {/* 主题 */}
       <button
-        onClick={() => setDark(!dark)}
-        className="w-10 h-10 rounded-full glass flex items-center justify-center text-lg
-                   hover:scale-105 active:scale-95 transition-transform"
-        aria-label={dark ? '切换浅色模式' : '切换深色模式'}
+        onClick={() => setIsLight(!isLight)}
+        className="w-9 h-9 rounded-full flex items-center justify-center text-lg
+                   hover:bg-[var(--bg-overlay)] active:scale-95 transition-all duration-200"
+        aria-label={isLight ? '深色模式' : '浅色模式'}
       >
-        {dark ? '☀️' : '🌙'}
+        {isLight ? '🌙' : '☀️'}
       </button>
-    </div>
+    </header>
   );
 }

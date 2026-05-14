@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import TopBar from './components/TopBar';
 import SearchBar from './components/SearchBar';
 import HotTags from './components/HotTags';
@@ -9,11 +9,23 @@ import Toast from './components/Toast';
 export default function App() {
   const [chatQuery, setChatQuery] = useState('');
   const [showChat, setShowChat] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  const [toast, setToast] = useState('');
+
+  // Ctrl+K → 聚焦搜索
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.querySelector<HTMLInputElement>('input')?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const handleSearch = useCallback((q: string, mode: 'web' | 'ai') => {
     if (mode === 'web') {
-      window.open(`https://google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
     } else {
       setChatQuery(q);
       setShowChat(true);
@@ -27,35 +39,36 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full flex flex-col">
-      {/* 动态光斑背景 */}
-      <div className="spots">
-        <div className="spot spot-1" />
-        <div className="spot spot-2" />
-        <div className="spot spot-3" />
+      {/* Atmospheric light spots */}
+      <div className="aura">
+        <div className="aura-blob aura-blob-1" />
+        <div className="aura-blob aura-blob-2" />
+        <div className="aura-blob aura-blob-3" />
       </div>
 
-      {/* 顶部栏 */}
+      {/* Top bar */}
       <TopBar />
 
-      {/* 主内容 */}
-      <div className="relative z-10 flex-1 flex flex-col items-center gap-6 pt-8">
-        {/* 搜索框 */}
-        <div className="anim-fade-up w-full flex justify-center">
+      {/* Main content — vertically centered */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-6 px-4"
+           style={{ paddingBottom: 'var(--safe-bottom)' }}>
+        {/* Search */}
+        <div className="anim-enter-up w-full max-w-md">
           <SearchBar onSearch={handleSearch} />
         </div>
 
-        {/* 快捷标签 */}
-        <div className="anim-fade-up w-full" style={{ animationDelay: '0.1s' }}>
+        {/* Tags */}
+        <div className="anim-enter-up w-full" style={{ animationDelay: '0.08s' }}>
           <HotTags onTagClick={handleTag} />
         </div>
 
-        {/* 导航网格 */}
-        <div className="anim-fade-up w-full" style={{ animationDelay: '0.2s' }}>
-          <NavGrid onToast={setToastMsg} />
+        {/* Nav grid */}
+        <div className="anim-enter-up w-full mt-2" style={{ animationDelay: '0.16s' }}>
+          <NavGrid onToast={setToast} />
         </div>
       </div>
 
-      {/* AI 对话面板 */}
+      {/* Chat panel */}
       {showChat && (
         <ChatPanel
           query={chatQuery}
@@ -64,7 +77,7 @@ export default function App() {
       )}
 
       {/* Toast */}
-      {toastMsg && <Toast msg={toastMsg} onClose={() => setToastMsg('')} />}
+      {toast && <Toast msg={toast} onClose={() => setToast('')} />}
     </div>
   );
 }
