@@ -1,11 +1,10 @@
 export default function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
   return (
     <div
-      className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl glass
-                 text-sm text-[var(--text-primary)] anim-enter-up shadow-xl max-w-[90vw] truncate"
-      onAnimationEnd={(e) => {
-        if (e.animationName === 'enter-up') setTimeout(onClose, 2000);
-      }}
+      className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50
+                 px-5 py-3 rounded-2xl glass text-[14px] font-medium text-[var(--text-primary)]
+                 anim-enter-up shadow-[var(--shadow-lg)] max-w-[85vw] truncate"
+      onClick={onClose}
     >
       {msg}
     </div>

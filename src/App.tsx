@@ -11,7 +11,7 @@ export default function App() {
   const [showChat, setShowChat] = useState(false);
   const [toast, setToast] = useState('');
 
-  // Ctrl+K → 聚焦搜索
+  // Ctrl/Cmd + K → focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -38,37 +38,38 @@ export default function App() {
   }, []);
 
   return (
-    <div className="relative h-full w-full flex flex-col">
-      {/* Atmospheric light spots */}
+    <div className="relative h-full w-full flex flex-col overflow-hidden">
+      {/* Atmospheric background */}
       <div className="aura">
         <div className="aura-blob aura-blob-1" />
         <div className="aura-blob aura-blob-2" />
         <div className="aura-blob aura-blob-3" />
       </div>
 
-      {/* Top bar */}
+      {/* Top bar with greeting + time + theme */}
       <TopBar />
 
       {/* Main content — vertically centered */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-6 px-4"
-           style={{ paddingBottom: 'var(--safe-bottom)' }}>
-        {/* Search */}
-        <div className="anim-enter-up w-full max-w-md">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center gap-8 px-4"
+            style={{ paddingBottom: 'max(24px, var(--safe-bottom))' }}>
+        
+        {/* Search — primary action */}
+        <div className="anim-enter-up w-full" style={{ animationDelay: '0.1s' }}>
           <SearchBar onSearch={handleSearch} />
         </div>
 
-        {/* Tags */}
-        <div className="anim-enter-up w-full" style={{ animationDelay: '0.08s' }}>
+        {/* Hot tags */}
+        <div className="anim-enter-up w-full" style={{ animationDelay: '0.2s' }}>
           <HotTags onTagClick={handleTag} />
         </div>
 
-        {/* Nav grid */}
-        <div className="anim-enter-up w-full mt-2" style={{ animationDelay: '0.16s' }}>
+        {/* Navigation grid */}
+        <div className="anim-enter-up w-full mt-2" style={{ animationDelay: '0.3s' }}>
           <NavGrid onToast={setToast} />
         </div>
-      </div>
+      </main>
 
-      {/* Chat panel */}
+      {/* AI chat panel */}
       {showChat && (
         <ChatPanel
           query={chatQuery}
@@ -76,7 +77,7 @@ export default function App() {
         />
       )}
 
-      {/* Toast */}
+      {/* Toast notifications */}
       {toast && <Toast msg={toast} onClose={() => setToast('')} />}
     </div>
   );

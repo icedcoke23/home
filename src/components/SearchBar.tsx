@@ -3,20 +3,19 @@ import { useState } from 'react';
 type Mode = 'web' | 'ai';
 
 const ENGINES = [
-  { icon: '🔍', name: 'Google' },
-  { icon: '🔎', name: 'Bing' },
-  { icon: '🅱️', name: '百度' },
-  { icon: '🦆', name: 'DuckDuckGo' },
+  { id: 'google', icon: 'G', name: 'Google' },
+  { id: 'bing', icon: 'B', name: 'Bing' },
+  { id: 'baidu', icon: '百', name: '百度' },
+  { id: 'duck', icon: 'D', name: 'DuckDuckGo' },
 ];
 
-interface Props {
-  onSearch: (q: string, mode: Mode) => void;
-}
+interface Props { onSearch: (q: string, mode: Mode) => void; }
 
 export default function SearchBar({ onSearch }: Props) {
   const [q, setQ] = useState('');
   const [mode, setMode] = useState<Mode>('web');
   const [ei, setEi] = useState(0);
+  const [focused, setFocused] = useState(false);
   const engine = ENGINES[ei % ENGINES.length];
 
   const go = () => {
@@ -27,56 +26,80 @@ export default function SearchBar({ onSearch }: Props) {
 
   return (
     <div className="relative z-10 w-full max-w-md mx-auto px-5">
-      {/* 搜索框 */}
-      <div className="flex items-center gap-3 px-5 py-4 rounded-2xl glass
-                      transition-all duration-250
-                      focus-within:border-[var(--brand)]/30
-                      focus-within:shadow-[0_0_0_4px_var(--brand-glow)]">
+      {/* Label */}
+      <p className="text-[13px] font-medium text-[var(--text-tertiary)] mb-2.5 tracking-wide uppercase">
+        {mode === 'ai' ? 'AI 对话' : '网页搜索'}
+      </p>
 
-        {/* 引擎切换 */}
+      {/* Search container */}
+      <div
+        className={`relative flex items-center gap-3 px-4 py-3.5 rounded-2xl glass pressable
+                    transition-all duration-300 ${focused ? 'shadow-[var(--shadow-glow)] border-[var(--border-focus)]' : ''}`}
+      >
+        {/* Engine button */}
         <button
           onClick={() => setEi(ei + 1)}
-          className="text-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-                     transition-colors shrink-0 p-0.5"
-          aria-label={`当前引擎 ${engine.name}，点击切换`}
+          className="w-9 h-9 rounded-xl flex items-center justify-center
+                     bg-[var(--brand-soft)] text-[var(--brand)] font-bold text-[15px]
+                     hover:bg-[var(--brand-muted)] active:scale-95 transition-all shrink-0"
+          aria-label={`搜索引擎: ${engine.name}，点击切换`}
         >
           {engine.icon}
         </button>
 
-        {/* 输入 */}
+        {/* Input */}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onKeyDown={(e) => e.key === 'Enter' && go()}
-          placeholder={mode === 'ai' ? 'AI 问答...' : `${engine.name} 搜索...`}
+          placeholder={mode === 'ai' ? '问我任何问题...' : `在 ${engine.name} 搜索...`}
           className="flex-1 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)]
-                     text-[17px] leading-6 py-0 min-w-0"
-          autoFocus
+                     text-[17px] leading-6 py-0.5 min-w-0 outline-none"
         />
 
-        {/* 清除 */}
+        {/* Clear */}
         {q && (
           <button
             onClick={() => setQ('')}
-            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]
-                       shrink-0 transition-colors w-6 h-6 flex items-center justify-center"
+            className="w-7 h-7 rounded-full flex items-center justify-center
+                       text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]
+                       hover:bg-[var(--bg-overlay)] active:scale-90 transition-all shrink-0"
           >
             ✕
           </button>
         )}
 
-        {/* Web/AI 切换 */}
+        {/* Mode toggle */}
         <button
           onClick={() => setMode(mode === 'web' ? 'ai' : 'web')}
-          className={`shrink-0 text-[13px] font-semibold px-3.5 py-1.5 rounded-full
+          className={`shrink-0 h-8 px-3.5 rounded-xl text-[13px] font-semibold
                      transition-all duration-300 ${
             mode === 'ai'
-              ? 'bg-[var(--brand)] text-white shadow-[0_0_16px_var(--brand-glow)]'
-              : 'bg-[var(--bg-overlay)] text-[var(--text-secondary)]'
+              ? 'bg-[var(--brand)] text-white shadow-[var(--shadow-glow)]'
+              : 'bg-[var(--bg-overlay)] text-[var(--text-secondary)] border border-[var(--border-default)]'
           }`}
         >
           {mode === 'ai' ? 'AI' : 'Web'}
         </button>
+
+        {/* Search button */}
+        {mode === 'web' && (
+          <button
+            onClick={go}
+            disabled={!q.trim()}
+            className="w-9 h-9 rounded-xl flex items-center justify-center
+                       bg-[var(--brand)] text-white shadow-md
+                       hover:brightness-110 active:scale-95 transition-all shrink-0
+                       disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="搜索"
+          >
+            <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
