@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* === DeepSeek 风格: 深色主题 === */
+/* DeepSeek 风格: 深色主题 + 暖色点缀 */
 :root {
   --ds-bg-primary: #1a1a2e;
   --ds-bg-secondary: #16213e;
@@ -15,28 +15,6 @@
   --ds-border: #2a2a4a;
   --ds-shadow: rgba(0, 0, 0, 0.3);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* === 浅色主题 === */
-.theme-light {
-  --ds-bg-primary: #f5f5f7;
-  --ds-bg-secondary: #ffffff;
-  --ds-bg-card: #e8e8ed;
-  --ds-bg-input: #ffffff;
-  --ds-accent: #3b82f6;
-  --ds-accent-hover: #2563eb;
-  --ds-accent-warm: #ef4444;
-  --ds-text-primary: #1a1a2e;
-  --ds-text-secondary: #4a4a5a;
-  --ds-text-muted: #9a9aae;
-  --ds-border: #e0e0e8;
-  --ds-shadow: rgba(0, 0, 0, 0.08);
-}
-
-/* 主题过渡 */
-.theme-light,
-.theme-light * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 * {
@@ -63,24 +41,26 @@ body {
 }
 
 /* 滚动条美化 */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--ds-border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ds-text-muted); }
-
-/* 输入框聚焦 */
-input:focus, textarea:focus, select:focus { outline: none; }
-
-/* 键盘焦点可见 */
-:focus-visible {
-  outline: 2px solid var(--ds-accent);
-  outline-offset: 2px;
+::-webkit-scrollbar {
+  width: 4px;
 }
-input:focus-visible, textarea:focus-visible, select:focus-visible {
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-text-muted);
+}
+
+/* 输入框聚焦环 */
+input:focus, textarea:focus {
   outline: none;
 }
 
-/* === 动画 === */
+/* 动画 */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -89,7 +69,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-@keyframes pulseDot {
+@keyframes pulse-dot {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
@@ -100,4 +80,3 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .animate-fade-in-up { animation: fadeInUp 0.4s ease-out; }
 .animate-fade-in    { animation: fadeIn 0.3s ease-out; }
 .animate-slide-in   { animation: slideInRight 0.3s ease-out; }
-.animate-pulse-dot  { animation: pulseDot 1.4s infinite; }

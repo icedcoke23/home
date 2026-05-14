@@ -6,7 +6,7 @@ function ChatMessageComponent({ msg }: { msg: Message }) {
   return (
     <div className={`flex gap-3 animate-fade-in-up ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent)] flex items-center justify-center text-sm shrink-0 mt-0.5" aria-hidden>
+        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent)] flex items-center justify-center text-sm shrink-0 mt-0.5">
           🤖
         </div>
       )}
@@ -18,15 +18,15 @@ function ChatMessageComponent({ msg }: { msg: Message }) {
         }`}
       >
         {msg.content || (msg.streaming && (
-          <span className="flex gap-1.5 items-center h-5" aria-label="正在生成回复">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-pulse-dot" style={{ animationDelay: '0s' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-pulse-dot" style={{ animationDelay: '0.2s' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-pulse-dot" style={{ animationDelay: '0.4s' }} />
+          <span className="flex gap-1.5 items-center h-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_infinite]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_0.2s_infinite]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_0.4s_infinite]" />
           </span>
         ))}
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent-warm)] flex items-center justify-center text-sm shrink-0 mt-0.5" aria-hidden>
+        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent-warm)] flex items-center justify-center text-sm shrink-0 mt-0.5">
           👤
         </div>
       )}
