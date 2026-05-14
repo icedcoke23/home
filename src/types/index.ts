@@ -1,4 +1,4 @@
-/* 类型定义 */
+/* ===== 类型定义 v2.0 ===== */
 
 export interface Message {
   id: string;
@@ -28,6 +28,14 @@ export interface QuickLink {
   title: string;
   url: string;
   icon?: string;
+  group?: string;
+  order?: number;
+}
+
+export interface QuickLinkGroup {
+  id: string;
+  name: string;
+  links: QuickLink[];
 }
 
 export interface AppSettings {
@@ -35,8 +43,20 @@ export interface AppSettings {
   aiApiKey: string;
   aiBaseUrl: string;
   defaultSearchEngine: string;
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'auto';
   language: 'zh' | 'en';
+  background: 'default' | 'gradient' | 'minimal';
+  showClock: boolean;
+  showWeather: boolean;
+}
+
+export interface WeatherData {
+  temp: string;
+  condition: string;
+  icon: string;
+  humidity: string;
+  wind: string;
+  location: string;
 }
 
 export type PageView = 'home' | 'chat' | 'settings';

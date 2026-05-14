@@ -1,41 +1,42 @@
-/**
- * 搜索引擎 URL 构建
- */
 export const SEARCH_ENGINES = {
   google: {
-    name: 'Google',
-    icon: '🔍',
+    id: 'google', name: 'Google', icon: '🔍',
     searchUrl: (q: string) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
     suggestUrl: (q: string) => `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(q)}`,
   },
   bing: {
-    name: 'Bing',
-    icon: '🔎',
+    id: 'bing', name: 'Bing', icon: '🔎',
     searchUrl: (q: string) => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
-    suggestUrl: null,
   },
   baidu: {
-    name: '百度',
-    icon: '🅱️',
+    id: 'baidu', name: '百度', icon: '🅱️',
     searchUrl: (q: string) => `https://www.baidu.com/s?wd=${encodeURIComponent(q)}`,
-    suggestUrl: null,
   },
   duckduckgo: {
-    name: 'DuckDuckGo',
-    icon: '🦆',
+    id: 'duckduckgo', name: 'DuckDuckGo', icon: '🦆',
     searchUrl: (q: string) => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
-    suggestUrl: null,
+  },
+  github: {
+    id: 'github', name: 'GitHub', icon: '🐙',
+    searchUrl: (q: string) => `https://github.com/search?q=${encodeURIComponent(q)}`,
   },
 } as const;
 
 export type SearchEngineKey = keyof typeof SEARCH_ENGINES;
 
+/** 执行搜索 */
 export function search(query: string, engine: SearchEngineKey = 'google') {
-  if (!query.trim()) return;
-  const url = SEARCH_ENGINES[engine]?.searchUrl(query.trim()) || SEARCH_ENGINES.google.searchUrl(query.trim());
+  const q = query.trim();
+  if (!q) return;
+  if (/^(https?:\/\/|www\.)[^\s]+/.test(q)) {
+    window.open(q.startsWith('http') ? q : `https://${q}`, '_blank');
+    return;
+  }
+  const url = SEARCH_ENGINES[engine]?.searchUrl(q) || SEARCH_ENGINES.google.searchUrl(q);
   window.open(url, '_blank');
 }
 
+/** 获取搜索建议 */
 export async function getSuggestions(query: string): Promise<string[]> {
   if (!query.trim()) return [];
   try {
@@ -46,4 +47,26 @@ export async function getSuggestions(query: string): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+/** 本地搜索历史 (last 20) */
+const HISTORY_KEY = 'home_search_history';
+
+export function getSearchHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function addSearchHistory(query: string): void {
+  const q = query.trim();
+  if (!q) return;
+  const history = getSearchHistory().filter((h) => h !== q);
+  history.unshift(q);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 20)));
+}
+
+export function clearSearchHistory(): void {
+  localStorage.removeItem(HISTORY_KEY);
 }

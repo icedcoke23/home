@@ -1,155 +1,123 @@
 import { create } from 'zustand';
 import type { Message, Conversation, QuickLink, AppSettings, PageView } from '../types';
-import { DEFAULT_SETTINGS, DEFAULT_QUICK_LINKS } from '../constants';
+import { DEFAULT_SETTINGS, DEFAULT_LINKS, STORAGE_KEY } from '../constants';
 
+/* ---- localStorage helpers ---- */
+function load<T>(suffix: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEY}_${suffix}`);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+function save<T>(suffix: string, value: T) {
+  try { localStorage.setItem(`${STORAGE_KEY}_${suffix}`, JSON.stringify(value)); } catch { /* quota */ }
+}
+const genId = () => `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+/* ---- Store ---- */
 interface AppState {
-  currentView: PageView;
-  setView: (view: PageView) => void;
+  page: PageView;
+  setPage: (v: PageView) => void;
+
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   selectedEngine: string;
   setSelectedEngine: (id: string) => void;
+
   conversations: Conversation[];
-  activeConversationId: string | null;
-  addMessage: (convId: string, msg: Message) => void;
-  updateMessage: (convId: string, msgId: string, content: string) => void;
+  activeConvId: string | null;
+  addMessage: (cid: string, m: Message) => void;
+  updateMessage: (cid: string, mid: string, content: string) => void;
   createConversation: () => string;
-  setActiveConversation: (id: string) => void;
+  setActiveConv: (id: string) => void;
   deleteConversation: (id: string) => void;
+
   quickLinks: QuickLink[];
-  addQuickLink: (link: QuickLink) => void;
-  removeQuickLink: (id: string) => void;
-  reorderQuickLinks: (links: QuickLink[]) => void;
+  addLink: (l: QuickLink) => void;
+  removeLink: (id: string) => void;
+  reorderLinks: (links: QuickLink[]) => void;
+
   settings: AppSettings;
-  updateSettings: (partial: Partial<AppSettings>) => void;
+  updateSettings: (p: Partial<AppSettings>) => void;
+
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   isStreaming: boolean;
   setIsStreaming: (v: boolean) => void;
 }
 
-const STORAGE_KEY = 'home';
-
-function load<T>(keySuffix: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_KEY}_${keySuffix}`);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function save<T>(keySuffix: string, value: T): void {
-  try {
-    localStorage.setItem(`${STORAGE_KEY}_${keySuffix}`, JSON.stringify(value));
-  } catch { /* quota exceeded, ignore */ }
-}
-
-const generateId = () => `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-
-export const useAppStore = create<AppState>((set) => ({
-  currentView: 'home',
-  setView: (view) => set({ currentView: view }),
+export const useStore = create<AppState>((set) => ({
+  page: 'home',
+  setPage: (page) => set({ page }),
 
   searchQuery: '',
-  setSearchQuery: (q) => set({ searchQuery: q }),
-  selectedEngine: load<string>('selectedEngine', DEFAULT_SETTINGS.defaultSearchEngine),
-  setSelectedEngine: (id) => {
-    save('selectedEngine', id);
-    set({ selectedEngine: id });
-  },
+  setSearchQuery: (searchQuery) => set({ searchQuery }),
+  selectedEngine: load('selectedEngine', DEFAULT_SETTINGS.defaultSearchEngine),
+  setSelectedEngine: (id) => { save('selectedEngine', id); set({ selectedEngine: id }); },
 
-  conversations: load<Conversation[]>('conversations', []),
-  activeConversationId: load<string | null>('activeConversationId', null),
+  conversations: load('conversations', []),
+  activeConvId: load('activeConvId', null),
 
-  addMessage: (convId, msg) =>
-    set((s) => {
-      const convs = s.conversations.map((c) =>
-        c.id === convId
-          ? { ...c, messages: [...c.messages, msg], updatedAt: Date.now() }
-          : c
-      );
-      save('conversations', convs);
-      return { conversations: convs };
-    }),
-
-  updateMessage: (convId, msgId, content) =>
-    set((s) => {
-      const convs = s.conversations.map((c) =>
-        c.id === convId
-          ? {
-              ...c,
-              messages: c.messages.map((m) =>
-                m.id === msgId ? { ...m, content, streaming: false } : m
-              ),
-              updatedAt: Date.now(),
-            }
-          : c
-      );
-      save('conversations', convs);
-      return { conversations: convs, isStreaming: false };
-    }),
-
+  addMessage: (cid, msg) => set((s) => {
+    const conversations = s.conversations.map((c) =>
+      c.id === cid ? { ...c, messages: [...c.messages, msg], updatedAt: Date.now() } : c
+    );
+    save('conversations', conversations);
+    return { conversations };
+  }),
+  updateMessage: (cid, mid, content) => set((s) => {
+    const conversations = s.conversations.map((c) =>
+      c.id === cid ? {
+        ...c,
+        messages: c.messages.map((m) => m.id === mid ? { ...m, content, streaming: false } : m),
+        updatedAt: Date.now(),
+      } : c
+    );
+    save('conversations', conversations);
+    return { conversations, isStreaming: false };
+  }),
   createConversation: () => {
-    const id = generateId();
-    const conv: Conversation = {
-      id,
-      title: '新对话',
-      messages: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+    const id = genId();
+    const conv: Conversation = { id, title: '新对话', messages: [], createdAt: Date.now(), updatedAt: Date.now() };
     set((s) => {
-      const convs = [conv, ...s.conversations];
-      save('conversations', convs);
-      save('activeConversationId', id);
-      return { conversations: convs, activeConversationId: id };
+      const conversations = [conv, ...s.conversations];
+      save('conversations', conversations);
+      save('activeConvId', id);
+      return { conversations, activeConvId: id };
     });
     return id;
   },
+  setActiveConv: (id) => { save('activeConvId', id); set({ activeConvId: id }); },
+  deleteConversation: (id) => set((s) => {
+    const conversations = s.conversations.filter((c) => c.id !== id);
+    const activeConvId = s.activeConvId === id ? (conversations[0]?.id ?? null) : s.activeConvId;
+    save('conversations', conversations);
+    save('activeConvId', activeConvId);
+    return { conversations, activeConvId };
+  }),
 
-  setActiveConversation: (id) => {
-    save('activeConversationId', id);
-    set({ activeConversationId: id });
-  },
+  quickLinks: load('quickLinks', DEFAULT_LINKS),
+  addLink: (link) => set((s) => {
+    const quickLinks = [...s.quickLinks, link];
+    save('quickLinks', quickLinks);
+    return { quickLinks };
+  }),
+  removeLink: (id) => set((s) => {
+    const quickLinks = s.quickLinks.filter((l) => l.id !== id);
+    save('quickLinks', quickLinks);
+    return { quickLinks };
+  }),
+  reorderLinks: (quickLinks) => { save('quickLinks', quickLinks); set({ quickLinks }); },
 
-  deleteConversation: (id) =>
-    set((s) => {
-      const convs = s.conversations.filter((c) => c.id !== id);
-      const nextActive = s.activeConversationId === id ? (convs[0]?.id ?? null) : s.activeConversationId;
-      save('conversations', convs);
-      save('activeConversationId', nextActive);
-      return { conversations: convs, activeConversationId: nextActive };
-    }),
-
-  quickLinks: load<QuickLink[]>('quickLinks', DEFAULT_QUICK_LINKS),
-  addQuickLink: (link) =>
-    set((s) => {
-      const links = [...s.quickLinks, link];
-      save('quickLinks', links);
-      return { quickLinks: links };
-    }),
-  removeQuickLink: (id) =>
-    set((s) => {
-      const links = s.quickLinks.filter((l) => l.id !== id);
-      save('quickLinks', links);
-      return { quickLinks: links };
-    }),
-  reorderQuickLinks: (links) => {
-    save('quickLinks', links);
-    set({ quickLinks: links });
-  },
-
-  settings: load<AppSettings>('settings', DEFAULT_SETTINGS),
-  updateSettings: (partial) =>
-    set((s) => {
-      const merged = { ...s.settings, ...partial };
-      save('settings', merged);
-      return { settings: merged };
-    }),
+  settings: load('settings', DEFAULT_SETTINGS),
+  updateSettings: (partial) => set((s) => {
+    const settings = { ...s.settings, ...partial };
+    save('settings', settings);
+    return { settings };
+  }),
 
   sidebarOpen: false,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   isStreaming: false,
-  setIsStreaming: (v) => set({ isStreaming: v }),
+  setIsStreaming: (isStreaming) => set({ isStreaming }),
 }));
