@@ -1,22 +1,44 @@
 @import "tailwindcss";
 
+/* ===== 主题变量 ===== */
 :root {
+  --bg: #f5f5f7;
+  --surface: rgba(255,255,255,0.72);
+  --surface-hover: rgba(255,255,255,0.88);
+  --input: rgba(255,255,255,0.80);
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --text: #1a1a2e;
+  --text2: #5a5a7a;
+  --text3: #9a9aae;
+  --border: rgba(0,0,0,0.06);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  --spot-1: #a78bfa;
+  --spot-2: #67e8f9;
+  --spot-3: #f9a8d4;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+.dark {
   --bg: #0d0d1a;
-  --surface: rgba(255,255,255,0.04);
+  --surface: rgba(255,255,255,0.05);
   --surface-hover: rgba(255,255,255,0.08);
   --input: rgba(255,255,255,0.06);
-  --accent: #5b9cf5;
-  --accent-hover: #7ab4ff;
-  --warm: #f4726b;
+  --accent: #818cf8;
+  --accent2: #a78bfa;
   --text: #f0f0f5;
   --text2: #8a8a9e;
   --text3: #55556a;
   --border: rgba(255,255,255,0.06);
-  --safe-b: env(safe-area-inset-bottom, 0px);
+  --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.12);
+  --spot-1: #4c1d95;
+  --spot-2: #164e63;
+  --spot-3: #831843;
 }
 
+/* ===== 基础 ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+html, body, #root { height: 100%; width: 100%; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
   background: var(--bg);
@@ -24,32 +46,91 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  transition: background 0.4s ease, color 0.4s ease;
 }
+input, textarea { outline: none; }
 ::-webkit-scrollbar { width: 0; }
-input:focus, textarea:focus { outline: none; }
 
-/* Animations */
+/* ===== 动态光斑 ===== */
+.spots {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.spot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  will-change: transform;
+}
+.spot-1 {
+  width: 300px; height: 300px;
+  background: var(--spot-1);
+  top: -10%; left: -10%;
+  animation: drift1 20s ease-in-out infinite;
+}
+.spot-2 {
+  width: 250px; height: 250px;
+  background: var(--spot-2);
+  top: 40%; right: -15%;
+  animation: drift2 25s ease-in-out infinite;
+}
+.spot-3 {
+  width: 200px; height: 200px;
+  background: var(--spot-3);
+  bottom: -10%; left: 30%;
+  animation: drift3 22s ease-in-out infinite;
+}
+@keyframes drift1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  25% { transform: translate(50px,30px) scale(1.1); }
+  50% { transform: translate(20px,60px) scale(0.9); }
+  75% { transform: translate(-30px,20px) scale(1.05); }
+}
+@keyframes drift2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(-40px,50px) scale(1.15); }
+  66% { transform: translate(30px,-20px) scale(0.85); }
+}
+@keyframes drift3 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(-60px,-40px) scale(1.2); }
+}
+
+/* ===== 毛玻璃卡片 ===== */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* ===== 动画 ===== */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-@keyframes slide-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
-@keyframes pulse {
-  0%,100% { opacity: 0.3; }
-  50% { opacity: 1; }
+@keyframes typing-dot {
+  0%,100% { opacity: 0.2; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-4px); }
 }
-.anim-fade-up { animation: fade-up 0.4s ease-out both; }
-.anim-fade-in { animation: fade-in 0.3s ease-out both; }
-.anim-slide-in { animation: slide-in 0.25s ease-out both; }
+.anim-fade-up  { animation: fade-up 0.45s ease-out both; }
+.anim-fade-in  { animation: fade-in 0.3s ease-out both; }
+.anim-slide-up { animation: slide-up 0.35s ease-out both; }
 
-/* Stagger children */
+/* 子元素交错 */
 .stagger > *:nth-child(1) { animation-delay: 0s; }
 .stagger > *:nth-child(2) { animation-delay: 0.04s; }
 .stagger > *:nth-child(3) { animation-delay: 0.08s; }
