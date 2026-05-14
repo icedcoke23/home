@@ -1,120 +1,41 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppStore } from '../store/appStore';
 import { streamChat } from '../services/ai';
+import { ChatMessage } from './ChatMessage';
+import { WelcomeGuide } from './WelcomeGuide';
+import { useScrollToBottom } from '../hooks/useScrollToBottom';
 import type { Message } from '../types';
 
-function ChatMessage({ msg }: { msg: Message }) {
-  const isUser = msg.role === 'user';
-  return (
-    <div className={`flex gap-3 animate-fade-in-up ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent)] flex items-center justify-center text-sm shrink-0 mt-0.5">
-          🤖
-        </div>
-      )}
-      <div
-        className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed break-words ${
-          isUser
-            ? 'bg-[var(--ds-accent)] text-white rounded-br-md'
-            : 'bg-[var(--ds-bg-input)] text-[var(--ds-text-primary)] rounded-bl-md'
-        }`}
-      >
-        {msg.content || (msg.streaming && (
-          <span className="flex gap-1.5 items-center h-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_infinite]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_0.2s_infinite]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ds-accent)] animate-[pulse-dot_1.4s_0.4s_infinite]" />
-          </span>
-        ))}
-      </div>
-      {isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--ds-accent-warm)] flex items-center justify-center text-sm shrink-0 mt-0.5">
-          👤
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WelcomeGuide() {
-  const { setSearchQuery, setView } = useAppStore();
-  const prompts = [
-    { icon: '💻', text: '帮我写一段 React 组件的代码' },
-    { icon: '📝', text: '分析这篇长文章的核心要点' },
-    { icon: '🌐', text: '搜索今天的科技新闻' },
-    { icon: '🎨', text: '推荐几个配色方案' },
-    { icon: '📊', text: '解释一下什么是量子计算' },
-    { icon: '🔧', text: '帮我调试这段 JavaScript 代码' },
-  ];
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-8 animate-fade-in">
-      <div className="text-5xl mb-2">🧠</div>
-      <h2 className="text-lg font-medium text-[var(--ds-text-primary)]">
-        有什么可以帮助你的？
-      </h2>
-      <div className="grid grid-cols-2 gap-2.5 w-full max-w-sm">
-        {prompts.map((p, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              setSearchQuery(p.text);
-              setView('chat');
-            }}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[var(--ds-bg-input)] hover:bg-[var(--ds-bg-card)] text-xs text-[var(--ds-text-secondary)] text-left transition-all active:scale-95 border border-transparent hover:border-[var(--ds-border)]"
-          >
-            <span>{p.icon}</span>
-            <span className="line-clamp-1">{p.text}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function AIChat() {
-  const {
-    conversations,
-    activeConversationId,
-    addMessage,
-    updateMessage,
-    createConversation,
-    searchQuery,
-    setSearchQuery,
-    settings,
-    isStreaming,
-    setIsStreaming,
-  } = useAppStore();
+  const conversations = useAppStore((s) => s.conversations);
+  const activeConversationId = useAppStore((s) => s.activeConversationId);
+  const addMessage = useAppStore((s) => s.addMessage);
+  const updateMessage = useAppStore((s) => s.updateMessage);
+  const createConversation = useAppStore((s) => s.createConversation);
+  const searchQuery = useAppStore((s) => s.searchQuery);
+  const setSearchQuery = useAppStore((s) => s.setSearchQuery);
+  const settings = useAppStore((s) => s.settings);
+  const isStreaming = useAppStore((s) => s.isStreaming);
+  const setIsStreaming = useAppStore((s) => s.setIsStreaming);
 
   const [input, setInput] = useState('');
-  const [showWelcome, setShowWelcome] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const hasAutoSent = useRef(false);
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
+  const showWelcome = !activeConv || activeConv.messages.length === 0;
+  const messagesEndRef = useScrollToBottom([activeConv?.messages]);
 
+  // 从搜索栏跳转进来时自动发送
   useEffect(() => {
-    // 如果有活跃对话且有消息，隐藏欢迎页
-    if (activeConv && activeConv.messages.length > 0) {
-      setShowWelcome(false);
-    } else if (!activeConv || activeConv.messages.length === 0) {
-      setShowWelcome(true);
-    }
-  }, [activeConv]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeConv?.messages]);
-
-  // 如果从搜索栏进入且有搜索内容，自动发送
-  useEffect(() => {
-    if (searchQuery && !isStreaming) {
+    if (searchQuery && !isStreaming && !hasAutoSent.current) {
+      hasAutoSent.current = true;
       const q = searchQuery;
       setSearchQuery('');
       handleSend(q);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = useCallback(async (text?: string) => {
     const content = (text || input.trim());
@@ -126,7 +47,6 @@ export default function AIChat() {
     }
 
     setInput('');
-    setShowWelcome(false);
 
     const userMsg: Message = {
       id: `msg_${Date.now()}`,
@@ -148,10 +68,10 @@ export default function AIChat() {
     setIsStreaming(true);
     abortRef.current = new AbortController();
 
-    const messages = [
-      ...(activeConv?.messages || []),
-      userMsg,
-    ].map((m) => ({ role: m.role, content: m.content }));
+    const currentMessages = conversations.find((c) => c.id === convId)?.messages || [];
+    const messages = [...currentMessages, userMsg]
+      .filter((m) => !m.streaming)
+      .map((m) => ({ role: m.role, content: m.content }));
 
     try {
       await streamChat(
@@ -164,13 +84,14 @@ export default function AIChat() {
         },
         abortRef.current.signal,
       );
-    } catch (err: any) {
-      if (err.name === 'AbortError') return;
-      updateMessage(convId!, assistantMsg.id, `❌ 请求失败: ${err.message}`);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      const msg = err instanceof Error ? err.message : '未知错误';
+      updateMessage(convId!, assistantMsg.id, `❌ 请求失败: ${msg}`);
     } finally {
       setIsStreaming(false);
     }
-  }, [input, isStreaming, activeConversationId, settings, activeConv]);
+  }, [input, isStreaming, activeConversationId, settings, conversations, addMessage, updateMessage, createConversation, setIsStreaming]);
 
   const handleStop = () => {
     abortRef.current?.abort();
@@ -200,7 +121,7 @@ export default function AIChat() {
         )}
       </div>
 
-      {/* 输入区域 — DeepSeek 风格 */}
+      {/* 输入区域 */}
       <div className="px-3 pb-3" style={{ paddingBottom: `calc(12px + var(--safe-bottom))` }}>
         <div className="max-w-2xl mx-auto">
           <div className="relative bg-[var(--ds-bg-input)] rounded-2xl border border-[var(--ds-border)] shadow-lg focus-within:border-[var(--ds-accent)] focus-within:shadow-[0_0_0_3px_rgba(74,158,255,0.15)] transition-all">
@@ -219,6 +140,7 @@ export default function AIChat() {
                 <button
                   onClick={handleStop}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--ds-accent-warm)] text-white text-xs active:scale-90 transition-transform"
+                  aria-label="停止生成"
                 >
                   ⏹
                 </button>
@@ -227,6 +149,7 @@ export default function AIChat() {
                   onClick={() => handleSend()}
                   disabled={!input.trim()}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--ds-accent)] text-white disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-all"
+                  aria-label="发送消息"
                 >
                   ↑
                 </button>

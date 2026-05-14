@@ -1,16 +1,53 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { useAppStore } from '../store/appStore';
 import type { QuickLink } from '../types';
 
+interface NavItemProps {
+  link: QuickLink;
+  editing: boolean;
+  onRemove: (id: string) => void;
+}
+
+const NavItem = memo(function NavItem({ link, editing, onRemove }: NavItemProps) {
+  return (
+    <div className="relative group">
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl bg-[var(--ds-bg-input)] hover:bg-[var(--ds-bg-card)] border border-transparent hover:border-[var(--ds-border)] transition-all active:scale-95 block ${editing ? 'pointer-events-none' : ''}`}
+        onClick={(e) => editing && e.preventDefault()}
+      >
+        <span className="text-2xl">{link.icon}</span>
+        <span className="text-[11px] text-[var(--ds-text-secondary)] truncate w-full text-center">
+          {link.title}
+        </span>
+      </a>
+      {editing && (
+        <button
+          onClick={() => onRemove(link.id)}
+          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--ds-accent-warm)] text-white text-[10px] flex items-center justify-center animate-fade-in shadow-md"
+          aria-label={`删除 ${link.title}`}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+});
+
 export default function NavGrid() {
-  const { quickLinks, addQuickLink, removeQuickLink } = useAppStore();
+  const quickLinks = useAppStore((s) => s.quickLinks);
+  const addQuickLink = useAppStore((s) => s.addQuickLink);
+  const removeQuickLink = useAppStore((s) => s.removeQuickLink);
+
   const [editing, setEditing] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newIcon, setNewIcon] = useState('');
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     if (!newTitle.trim() || !newUrl.trim()) return;
     const link: QuickLink = {
       id: `link_${Date.now()}`,
@@ -23,7 +60,11 @@ export default function NavGrid() {
     setNewUrl('');
     setNewIcon('');
     setShowAdd(false);
-  };
+  }, [newTitle, newUrl, newIcon, addQuickLink]);
+
+  const handleRemove = useCallback((id: string) => {
+    removeQuickLink(id);
+  }, [removeQuickLink]);
 
   return (
     <div className="w-full max-w-lg mx-auto px-4 mt-6 animate-fade-in-up">
@@ -47,39 +88,25 @@ export default function NavGrid() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
-        {quickLinks.map((link) => (
-          <div key={link.id} className="relative group">
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl bg-[var(--ds-bg-input)] hover:bg-[var(--ds-bg-card)] border border-transparent hover:border-[var(--ds-border)] transition-all active:scale-95 block ${editing ? 'pointer-events-none' : ''}`}
-              onClick={(e) => editing && e.preventDefault()}
-            >
-              <span className="text-2xl">{link.icon}</span>
-              <span className="text-[11px] text-[var(--ds-text-secondary)] truncate w-full text-center">
-                {link.title}
-              </span>
-            </a>
-            {editing && (
-              <button
-                onClick={() => removeQuickLink(link.id)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--ds-accent-warm)] text-white text-[10px] flex items-center justify-center animate-fade-in shadow-md"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      {quickLinks.length === 0 ? (
+        <p className="text-xs text-[var(--ds-text-muted)] text-center py-8">
+          暂无快捷链接，点击"+ 添加"开始
+        </p>
+      ) : (
+        <div className="grid grid-cols-4 gap-3">
+          {quickLinks.map((link) => (
+            <NavItem key={link.id} link={link} editing={editing} onRemove={handleRemove} />
+          ))}
+        </div>
+      )}
 
-      {/* 添加弹窗 */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowAdd(false)}>
           <div
             className="bg-[var(--ds-bg-secondary)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm p-5 animate-fade-in-up"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="添加快捷方式"
           >
             <h3 className="text-base font-medium text-[var(--ds-text-primary)] mb-4">添加快捷方式</h3>
             <div className="flex flex-col gap-3">

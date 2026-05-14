@@ -1,34 +1,34 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAppStore } from '../store/appStore';
+import { AI_MODELS } from '../constants';
 
 export default function Settings() {
-  const { settings, updateSettings, setView } = useAppStore();
+  const settings = useAppStore((s) => s.settings);
+  const updateSettings = useAppStore((s) => s.updateSettings);
+  const setView = useAppStore((s) => s.setView);
+
   const [localSettings, setLocalSettings] = useState({ ...settings });
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     updateSettings(localSettings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [localSettings, updateSettings]);
 
-  const models = [
-    { id: 'deepseek-chat', name: 'DeepSeek Chat' },
-    { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner' },
-    { id: 'gpt-4o', name: 'GPT-4o' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
-    { id: 'claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-    { id: 'claude-3-opus', name: 'Claude 3 Opus' },
-  ];
+  const update = useCallback(
+    (key: string, value: string) => setLocalSettings((p) => ({ ...p, [key]: value })),
+    []
+  );
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--ds-border)]">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setView('home')}
             className="text-[var(--ds-text-muted)] hover:text-[var(--ds-text-primary)] transition-colors p-1"
+            aria-label="返回主页"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -48,9 +48,8 @@ export default function Settings() {
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
-        {/* AI API 配置 */}
+        {/* AI 配置 */}
         <section>
           <h3 className="text-xs font-medium text-[var(--ds-text-muted)] uppercase tracking-wider mb-3">
             AI 接口配置
@@ -60,10 +59,10 @@ export default function Settings() {
               <label className="text-xs text-[var(--ds-text-muted)] mb-1.5 block">模型</label>
               <select
                 value={localSettings.aiModel}
-                onChange={(e) => setLocalSettings({ ...localSettings, aiModel: e.target.value })}
+                onChange={(e) => update('aiModel', e.target.value)}
                 className="w-full bg-[var(--ds-bg-input)] text-[var(--ds-text-primary)] text-sm px-3 py-2.5 rounded-xl border border-[var(--ds-border)] focus:border-[var(--ds-accent)] outline-none appearance-none"
               >
-                {models.map((m) => (
+                {AI_MODELS.map((m) => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
@@ -73,7 +72,7 @@ export default function Settings() {
               <input
                 type="password"
                 value={localSettings.aiApiKey}
-                onChange={(e) => setLocalSettings({ ...localSettings, aiApiKey: e.target.value })}
+                onChange={(e) => update('aiApiKey', e.target.value)}
                 placeholder="sk-..."
                 className="w-full bg-[var(--ds-bg-input)] text-[var(--ds-text-primary)] text-sm px-3 py-2.5 rounded-xl border border-[var(--ds-border)] focus:border-[var(--ds-accent)] outline-none"
               />
@@ -83,7 +82,7 @@ export default function Settings() {
               <input
                 type="text"
                 value={localSettings.aiBaseUrl}
-                onChange={(e) => setLocalSettings({ ...localSettings, aiBaseUrl: e.target.value })}
+                onChange={(e) => update('aiBaseUrl', e.target.value)}
                 placeholder="https://api.deepseek.com"
                 className="w-full bg-[var(--ds-bg-input)] text-[var(--ds-text-primary)] text-sm px-3 py-2.5 rounded-xl border border-[var(--ds-border)] focus:border-[var(--ds-accent)] outline-none"
               />
@@ -105,7 +104,7 @@ export default function Settings() {
             ].map((e) => (
               <button
                 key={e.id}
-                onClick={() => setLocalSettings({ ...localSettings, defaultSearchEngine: e.id })}
+                onClick={() => update('defaultSearchEngine', e.id)}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all ${
                   localSettings.defaultSearchEngine === e.id
                     ? 'bg-[var(--ds-accent)]/20 text-[var(--ds-accent)] border border-[var(--ds-accent)]/30'
@@ -128,7 +127,7 @@ export default function Settings() {
             {(['dark', 'light'] as const).map((t) => (
               <button
                 key={t}
-                onClick={() => setLocalSettings({ ...localSettings, theme: t })}
+                onClick={() => update('theme', t)}
                 className={`flex-1 py-2.5 rounded-xl text-sm transition-all ${
                   localSettings.theme === t
                     ? 'bg-[var(--ds-accent)]/20 text-[var(--ds-accent)] border border-[var(--ds-accent)]/30'
@@ -141,11 +140,10 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* 关于 */}
         <section className="mt-auto">
           <div className="text-center pt-4 pb-2 border-t border-[var(--ds-border)]">
             <p className="text-[10px] text-[var(--ds-text-muted)]">
-              Home v1.0 · DeepSeek Style Navigation
+              Home v1.1 · DeepSeek Style Navigation
             </p>
           </div>
         </section>

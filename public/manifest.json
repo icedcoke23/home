@@ -1,16 +1,15 @@
 {
-  "name": "Home · AI 智能导航",
+  "name": "Home · AI 智能导航主页",
   "short_name": "Home",
   "description": "融合 AI 对话、网页搜索、快捷导航的手机浏览器主页",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>",
-      "sizes": "any",
+      "sizes": "100x100",
       "type": "image/svg+xml"
     }
   ]

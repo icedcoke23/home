@@ -1,35 +1,32 @@
 import { useAppStore } from '../store/appStore';
 
 export default function Sidebar() {
-  const {
-    sidebarOpen,
-    toggleSidebar,
-    conversations,
-    activeConversationId,
-    setActiveConversation,
-    deleteConversation,
-    createConversation,
-    setView,
-  } = useAppStore();
+  const sidebarOpen = useAppStore((s) => s.sidebarOpen);
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
+  const conversations = useAppStore((s) => s.conversations);
+  const activeConversationId = useAppStore((s) => s.activeConversationId);
+  const setActiveConversation = useAppStore((s) => s.setActiveConversation);
+  const deleteConversation = useAppStore((s) => s.deleteConversation);
+  const createConversation = useAppStore((s) => s.createConversation);
+  const setView = useAppStore((s) => s.setView);
 
   if (!sidebarOpen) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/40 z-40 animate-fade-in"
         onClick={toggleSidebar}
+        aria-hidden
       />
 
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--ds-bg-secondary)] z-50 animate-slide-in shadow-2xl flex flex-col">
-        {/* Header */}
+      <aside className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--ds-bg-secondary)] z-50 animate-slide-in shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--ds-border)]">
           <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">对话历史</h2>
           <button
             onClick={toggleSidebar}
             className="text-[var(--ds-text-muted)] hover:text-[var(--ds-text-primary)] transition-colors p-1"
+            aria-label="关闭侧边栏"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -37,7 +34,6 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* New Chat */}
         <button
           onClick={() => {
             createConversation();
@@ -49,8 +45,7 @@ export default function Sidebar() {
           + 新对话
         </button>
 
-        {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto px-2 py-3">
+        <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="对话列表">
           {conversations.length === 0 ? (
             <p className="text-xs text-[var(--ds-text-muted)] text-center py-8">暂无对话记录</p>
           ) : (
@@ -68,6 +63,16 @@ export default function Sidebar() {
                     setView('chat');
                     toggleSidebar();
                   }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveConversation(conv.id);
+                      setView('chat');
+                      toggleSidebar();
+                    }
+                  }}
                 >
                   <span className="shrink-0 text-xs">💬</span>
                   <span className="flex-1 truncate text-xs">
@@ -79,6 +84,7 @@ export default function Sidebar() {
                       deleteConversation(conv.id);
                     }}
                     className="opacity-0 group-hover:opacity-100 text-[var(--ds-text-muted)] hover:text-[var(--ds-accent-warm)] p-0.5 transition-all"
+                    aria-label={`删除对话: ${conv.messages[0]?.content.slice(0, 20) || conv.title}`}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -88,9 +94,8 @@ export default function Sidebar() {
               ))}
             </div>
           )}
-        </div>
+        </nav>
 
-        {/* Bottom */}
         <div className="px-4 py-3 border-t border-[var(--ds-border)]">
           <button
             onClick={() => {
@@ -106,7 +111,7 @@ export default function Sidebar() {
             设置
           </button>
         </div>
-      </div>
+      </aside>
     </>
   );
 }
