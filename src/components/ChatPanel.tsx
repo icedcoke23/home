@@ -73,21 +73,21 @@ export default function ChatPanel({ query, onClose }: Props) {
 
         {/* 标题 */}
         <div className="flex items-center justify-between px-5 pb-3">
-          <h3 className="text-sm font-medium text-[var(--text)]">AI 助手</h3>
-          <span className="text-[10px] text-[var(--text3)]">演示模式</span>
+          <h3 className="text-base font-medium text-[var(--text)]">AI 助手</h3>
+          <span className="text-xs text-[var(--text3)]">演示模式</span>
         </div>
 
         {/* 消息列表 */}
         <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-3">
           {msgs.length === 0 && (
-            <p className="text-xs text-[var(--text3)] text-center py-6">有什么想了解的？直接问我</p>
+            <p className="text-sm text-[var(--text3)] text-center py-6">有什么想了解的？直接问我</p>
           )}
           {msgs.map((m, i) => (
             <div key={i} className={`flex gap-2 anim-fade-up ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {m.role === 'ai' && (
-                <span className="w-7 h-7 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-xs shrink-0 mt-0.5">🤖</span>
+                <span className="w-8 h-8 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-sm shrink-0 mt-0.5">🤖</span>
               )}
-              <div className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+              <div className={`max-w-[82%] px-4 py-3 rounded-2xl text-[16px] leading-relaxed whitespace-pre-wrap ${
                 m.role === 'user'
                   ? 'bg-[var(--accent)] text-white rounded-br-sm'
                   : 'bg-[var(--surface)] text-[var(--text)] rounded-bl-sm'
@@ -95,13 +95,13 @@ export default function ChatPanel({ query, onClose }: Props) {
                 {m.text}
               </div>
               {m.role === 'user' && (
-                <span className="w-7 h-7 rounded-full bg-[var(--accent2)]/20 flex items-center justify-center text-xs shrink-0 mt-0.5">👤</span>
+                <span className="w-8 h-8 rounded-full bg-[var(--accent2)]/20 flex items-center justify-center text-sm shrink-0 mt-0.5">👤</span>
               )}
             </div>
           ))}
           {typing && (
             <div className="flex gap-2 anim-fade-up">
-              <span className="w-7 h-7 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-xs shrink-0 mt-0.5">🤖</span>
+              <span className="w-8 h-8 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-sm shrink-0 mt-0.5">🤖</span>
               <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-[var(--surface)]">
                 <span className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--text3)] animate-typing-dot" />
@@ -123,11 +123,11 @@ export default function ChatPanel({ query, onClose }: Props) {
               onChange={(e) => setInp(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && send(inp)}
               placeholder="输入消息..."
-              className="flex-1 bg-transparent text-[var(--text)] placeholder-[var(--text3)] text-sm py-1 outline-none"
+              className="flex-1 bg-transparent text-[var(--text)] placeholder-[var(--text3)] text-[16px] py-1.5 outline-none"
             />
             <button onClick={() => send(inp)}
               disabled={!inp.trim() || typing}
-              className="text-sm text-[var(--accent)] disabled:opacity-30 font-medium shrink-0 transition-opacity">
+              className="text-base text-[var(--accent)] disabled:opacity-30 font-medium shrink-0 transition-opacity">
               发送
             </button>
           </div>

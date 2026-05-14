@@ -21,7 +21,7 @@ export default function NavGrid({ onToast }: Props) {
 
   return (
     <div className="relative z-10 w-full max-w-md mx-auto px-5 mt-4">
-      <div className="grid grid-cols-4 gap-2.5 stagger">
+      <div className="grid grid-cols-4 gap-3 stagger">
         {NAV_LINKS.map((link) => (
           <a
             key={link.id}
@@ -31,13 +31,13 @@ export default function NavGrid({ onToast }: Props) {
             onTouchStart={onTouchStart(link)}
             onTouchEnd={onTouchEnd}
             onTouchMove={onTouchEnd}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl glass
+            className="flex flex-col items-center gap-2 p-3 rounded-xl glass
                        hover:scale-105 active:scale-95 transition-all duration-200
                        cursor-pointer"
             aria-label={`打开 ${link.title}`}
           >
-            <span className="text-2xl">{link.icon}</span>
-            <span className="text-[10px] text-[var(--text2)] truncate w-full text-center leading-tight">
+            <span className="text-3xl">{link.icon}</span>
+            <span className="text-[13px] text-[var(--text2)] truncate w-full text-center leading-tight">
               {link.title}
             </span>
           </a>

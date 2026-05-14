@@ -38,7 +38,7 @@ export default function App() {
       <TopBar />
 
       {/* 主内容 */}
-      <div className="relative z-10 flex-1 flex flex-col items-center gap-5 pt-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center gap-6 pt-8">
         {/* 搜索框 */}
         <div className="anim-fade-up w-full flex justify-center">
           <SearchBar onSearch={handleSearch} />

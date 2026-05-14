@@ -12,7 +12,7 @@ export default function HotTags({ onTagClick }: Props) {
           <button
             key={tag.id}
             onClick={() => onTagClick(tag.text)}
-            className="px-3 py-1.5 rounded-full glass text-xs text-[var(--text2)]
+            className="px-4 py-2 rounded-full glass text-sm text-[var(--text2)]
                        hover:text-[var(--text)] hover:scale-105 active:scale-95
                        transition-all duration-200"
           >
